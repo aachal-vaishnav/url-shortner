@@ -13,5 +13,5 @@ spring:
       ddl-auto: update
     show-sql: true
 
-#app:
-  #base-url: https://your-app-name.up.railway.app
+app:
+  base-url: https://url-shortner.up.railway.app
