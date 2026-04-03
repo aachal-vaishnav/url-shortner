@@ -1,17 +1,72 @@
 server:
-  port: ${PORT:8080}
+  port: 8080
 
 spring:
+  application:
+    name: url-shortener
+
+  # MySQL Configuration
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:mysql://localhost:3306/url_shortener_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: db_pass
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20          # Connection pool tuning for production
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
 
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: update               # I will Use 'validate' in production with Flyway
+    show-sql: false                  # Set true only for local debugging
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
 
+  # Redis Configuration
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:                      #  Redis auth pw
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 2
+
+  # Cache Configuration
+  cache:
+    type: redis
+    redis:
+      time-to-live: 86400000         # 24 hours in milliseconds
+
+# Application-Level Configuration
 app:
-  base-url: https://url-shortner.up.railway.app
+  base-url: http://localhost:8080    # will Change to  domain in production (e.g., https://short.ly)
+  short-code-length: 7               # Target length of generated short codes,~83 billion combinations
+
+# SpringDoc / Swagger UI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+
+# Async Thread Pool
+async:
+  core-pool-size: 4
+  max-pool-size: 10
+  queue-capacity: 100
